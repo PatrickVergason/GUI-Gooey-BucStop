@@ -15,7 +15,10 @@
 // get a random integer between the range of [min,max]
 // see https://stackoverflow.com/a/1527820/2124254
 
-let score = 0; //Overall score variable
+var score = 0; //Score variable
+
+
+//const gameId = 'tetris';
 function getRandomInt(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
@@ -147,18 +150,22 @@ function placeTetromino() {
 function showGameOver() {
     cancelAnimationFrame(rAF);
     gameOver = true;
+    gameStarted = false;
 
     context.fillStyle = 'black';
-    context.globalAlpha = 0.75;
     context.fillRect(0, canvas.height / 2 - 30, canvas.width, 60);
-
-    context.globalAlpha = 1;
     context.fillStyle = 'white';
-    context.font = '20px monospace';
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.fillText('GAME OVER! Score: ' + score, canvas.width / 2, canvas.height / 2);
+    context.fillText(`GAME OVER! Score: ${score}`, canvas.width / 2, canvas.height / 2);
+
+    const initials = prompt('Enter your initials (3 characters):');
+    if (initials && initials.length <= 3) {
+        updateLeaderboard(score, initials.toUpperCase());
+    }
+
+    drawLeaderboard();
+    drawStartButton();
 }
+
 
 const canvas = document.getElementById('game');
 const context = canvas.getContext('2d');
@@ -234,8 +241,70 @@ let tetromino = getNextTetromino();
 let rAF = null;  // keep track of the animation frame so we can cancel it
 let gameOver = false;
 
+let leaderboard = JSON.parse(localStorage.getItem('tetrisLeaderboard')) || [];
+const maxLeaderboardEntries = 10;
+
+function updateLeaderboard(newScore, initials) {
+    leaderboard.push({ score: newScore, initials });
+    leaderboard.sort((a, b) => b.score - a.score);
+    leaderboard = leaderboard.slice(0, maxLeaderboardEntries);
+    localStorage.setItem('tetrisLeaderboard', JSON.stringify(leaderboard));
+}
+
+function drawLeaderboard() {
+    if (!gameStarted) {
+        context.fillStyle = 'black';
+        context.fillRect(0, 0, canvas.width, canvas.height / 4);
+        context.fillStyle = 'white';
+        context.font = '16px Arial';
+        context.textAlign = 'left';
+        leaderboard.forEach((entry, index) => {
+            context.fillText(`${index + 1}. ${entry.initials} - ${entry.score}`, 10, 20 * (index + 1));
+        });
+    }
+}
+
+function drawStartButton() {
+    context.fillStyle = 'blue';
+    context.fillRect(canvas.width / 2 - 50, canvas.height - 60, 100, 40);
+    context.fillStyle = 'white';
+    context.textAlign = 'center';
+    context.fillText('Start Game', canvas.width / 2, canvas.height - 35);
+}
+
+canvas.addEventListener('click', function (event) {
+    const { x, y } = getMousePos(canvas, event);
+    if (y > canvas.height - 60 && y < canvas.height - 20 &&
+        x > canvas.width / 2 - 50 && x < canvas.width / 2 + 50 && !gameStarted) {
+        startGame();
+    }
+});
+
+function getMousePos(canvas, evt) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+        x: evt.clientX - rect.left,
+        y: evt.clientY - rect.top
+    };
+}
+
+function startGame() {
+    gameStarted = true;
+    gameOver = false;
+    score = 0;
+    tetrominoSequence.length = 0;
+    playfield.forEach(row => row.fill(0));
+    rAF = requestAnimationFrame(loop);
+}
+
+let gameStarted = false;
+drawLeaderboard();
+drawStartButton();
+
 // game loop
 function loop() {
+    if (!gameStarted) return;
+
     rAF = requestAnimationFrame(loop);
     context.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -279,6 +348,10 @@ function loop() {
             }
         }
     }
+}
+
+if (gameOver) {
+    showGameOver();
 }
 
 // listen to keyboard events to move the active tetromino
@@ -331,5 +404,12 @@ document.addEventListener('keydown', function (e) {
     }
 });
 
+document.addEventListener("keydown", (e) => {
+    if (e.which === 37 || e.which === 38 || e.which === 39 || e.which === 40) {
+        e.preventDefault();
+    }
+});
+
+
 // start the game
-rAF = requestAnimationFrame(loop);
+    rAF = requestAnimationFrame(loop);
