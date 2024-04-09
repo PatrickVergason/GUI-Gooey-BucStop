@@ -20,6 +20,16 @@ namespace BucStop.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Login(string email)
         {
+            // Sanitize and validate the input
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                ModelState.AddModelError(string.Empty, "Email address is required.");
+                return View();
+            }
+
+            email = email.Trim(); // Sanitize: removing leading and trailing whitespace
+
+            // Validate: Ensure it's an ETSU email address
             if (Regex.IsMatch(email, @"\b[A-Za-z0-9._%+-]+@etsu\.edu\b"))
             {
                 // If authentication is successful, create a ClaimsPrincipal and sign in the user
@@ -50,7 +60,5 @@ namespace BucStop.Controllers
             await HttpContext.SignOutAsync("CustomAuthenticationScheme");
             return RedirectToAction("Login");
         }
-
-
     }
 }
