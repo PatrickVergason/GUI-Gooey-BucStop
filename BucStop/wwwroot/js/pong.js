@@ -1,5 +1,3 @@
-﻿
-
 
 // Function to update and display the game timer
 function updateTimer() {
@@ -73,6 +71,7 @@ function drawLeaderboard() {
 
     // Set the font size 
     context.font = '32px Arial';
+
     context.fillStyle = 'white';
 
     // Calculate the starting point for the text to center it on the canvas
@@ -98,6 +97,62 @@ function drawStartButton() {
 
     context.fillStyle = 'blue';
     context.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
+
+    context.fillStyle = 'white';
+    context.font = '20px Arial';
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText("Start Game", buttonX + buttonWidth / 2, buttonY + buttonHeight / 2);
+
+    // Store button dimensions for click detection
+    startButton = { x: buttonX, y: buttonY, width: buttonWidth, height: buttonHeight };
+}
+// Function to end the game
+function endGame() {
+    clearInterval(timerId); // Stop the timer
+    gameActive = false;
+
+    // Clear the canvas
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Display the final score
+    context.font = '36px Arial';
+    context.fillStyle = 'black';
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText(`Final Score - Player: ${playerScore}, Computer: ${computerScore}`, canvas.width / 2, canvas.height / 2);
+
+    // Wait for a moment before prompting for initials
+    setTimeout(() => {
+        const initials = prompt("Enter your initials:") || "AAA"; // Default to "AAA" if no input
+        updateLeaderboard(playerScore, initials);
+        drawLeaderboard();
+
+        // Show the start button after the leaderboard
+        setTimeout(drawStartButton, 3000); // Adjust delay as needed
+    }, 3000); // Adjust delay as needed for the player to read the final score
+}
+
+// Function to check if a point is inside a rectangle
+function isInside(point, rect) {
+    return point.x >= rect.x && point.x <= rect.x + rect.width &&
+        point.y >= rect.y && point.y <= rect.y + rect.height;
+}
+
+// Event listener to handle clicks on the canvas and start the game if the button is clicked
+canvas.addEventListener('click', function (event) {
+    const rect = canvas.getBoundingClientRect();
+    const clickPosition = {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top
+    };
+
+    if (isInside(clickPosition, startButton)) {
+        startGame();
+    }
+});
+
+
 
     context.fillStyle = 'white';
     context.font = '20px Arial';
@@ -320,4 +375,6 @@ function initializeGame() {
     drawTimer();
 }
 
+
 initializeGame();
+

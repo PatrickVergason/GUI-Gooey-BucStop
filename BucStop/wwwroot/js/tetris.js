@@ -412,4 +412,4 @@ document.addEventListener("keydown", (e) => {
 
 
 // start the game
-rAF = requestAnimationFrame(loop);
+    rAF = requestAnimationFrame(loop);
