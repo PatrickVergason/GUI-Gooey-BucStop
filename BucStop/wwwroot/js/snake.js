@@ -28,11 +28,12 @@ function drawLeaderboard() {
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.fillStyle = 'white';
     context.font = '16px Arial';
-    context.fillText('Leaderboard:', 10, 20);
+    context.fillText('Leaderboard:', 50, 20); // Moved 40 pixels to the right
     leaderboard.forEach((entry, index) => {
-        context.fillText(`${index + 1}. ${entry.initials} - ${entry.score}`, 10, 40 + 20 * index);
+        context.fillText(`${index + 1}. ${entry.initials} - ${entry.score}`, 50, 40 + 20 * index); // Moved 40 pixels to the right
     });
 }
+
 
 // Setup canvas and context for drawing
 const canvas = document.getElementById("game");
